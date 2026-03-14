@@ -5,6 +5,9 @@ sudo apt install -y \
     qemu-system-x86 \
     gcc
 
+## 编译引导扇区
+nasm -f bin src/boot.asm -o build/boot.bin
+
 ## 编译内核入口
 nasm -f elf32 src/kernel_entry.asm -o build/kernel_entry.o
 
