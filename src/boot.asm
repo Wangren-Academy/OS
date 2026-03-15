@@ -28,13 +28,13 @@ call print_string
 mov ah, 0
 int 0x13
 
-; 加载内核 (从第2个扇区开始，加载30个扇区，足够内核使用)
+; 加载内核 (从第2个扇区开始，加载50个扇区，约25KB)
 mov ax, 0x1000
 mov es, ax
 xor bx, bx
 
 mov ah, 0x02
-mov al, 30        ; 加载30个扇区 (约15KB)
+mov al, 50        ; 加载50个扇区（可根据实际内核大小调整）
 mov ch, 0
 mov cl, 2         ; 从第2个扇区开始
 mov dh, 0
