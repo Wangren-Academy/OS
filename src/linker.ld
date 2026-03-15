@@ -1,10 +1,9 @@
 /* src/linker.ld */
 OUTPUT_FORMAT("binary")
-ENTRY(_start)  /* 入口点符号 */
+ENTRY(_start)
 
 SECTIONS
 {
-    /* 内核加载地址为 0x10000 */
     . = 0x10000;
     
     .text : {
@@ -20,9 +19,12 @@ SECTIONS
     }
     
     .bss : {
+        _bss_start = .;
         *(.bss)
+        *(COMMON)
+        _bss_end = .;
     }
     
-    /* 确保对齐到扇区边界 */
-    . = ALIGN(512);
+    /* 强制填充到 100 扇区边界（51200 字节） */
+    . = 0x10000 + 51200;
 }

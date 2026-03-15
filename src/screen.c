@@ -22,13 +22,24 @@ void putchar(char c) {
         cursor_y++;
     } else if (c == '\b') {
         if (cursor_x > 0) {
+            // 正常退格：光标左移，清空该位置
             cursor_x--;
             pos = (cursor_y * 80 + cursor_x) * 2;
             video_memory[pos]   = ' ';
             video_memory[pos+1] = 0x07;
+        } else if (cursor_y > 0) {
+            // 行首退格：回到上一行末尾，并删除该行最后一个字符
+            cursor_y--;
+            cursor_x = 79;  // 上一行最后一列
+            // 删除上一行最后一个字符
+            pos = (cursor_y * 80 + cursor_x) * 2;
+            video_memory[pos]   = ' ';
+            video_memory[pos+1] = 0x07;
         }
-        // 可扩展：处理行首退格到上一行
+        // 如果已经在第一行行首，则忽略退格
     } else {
+        // 普通字符
+        pos = (cursor_y * 80 + cursor_x) * 2;
         video_memory[pos]   = c;
         video_memory[pos+1] = 0x07;
         cursor_x++;

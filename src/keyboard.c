@@ -7,6 +7,9 @@
 #define KEYBOARD_STATUS_PORT 0x64
 #define PIC1_COMMAND         0x20
 
+// 定义数组大小
+#define SCANCODE_MAX (sizeof(scancode_to_ascii) / sizeof(scancode_to_ascii[0]))
+
 // 扫描码到ASCII映射（无Shift）
 static const char scancode_to_ascii[] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0,
@@ -66,6 +69,11 @@ void keyboard_handler() {
 
         // 只处理按键按下（忽略松开）
         if (!(scancode & 0x80)) {
+            // 安全检查：scancode 必须在数组范围内
+            if (scancode >= SCANCODE_MAX) {
+                goto eoi;  // 忽略超出范围的扫描码
+            }
+
             char ascii;
             if (shift_pressed)
                 ascii = scancode_to_ascii_shift[scancode];
