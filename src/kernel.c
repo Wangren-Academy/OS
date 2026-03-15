@@ -1,4 +1,34 @@
 // src/kernel.c
+#include "io.h"
+#define PIC1_COMMAND 0x20
+#define PIC1_DATA    0x21
+#define PIC2_COMMAND 0xA0
+#define PIC2_DATA    0xA1
+
+// 声明外部函数
+extern void isr33();  // 键盘中断
+
+// PIC初始化函数
+void pic_remap() {
+    // 保存原来的屏蔽字
+    unsigned char a1 = inb(PIC1_DATA);
+    unsigned char a2 = inb(PIC2_DATA);
+
+    // 初始化主片和从片
+    outb(PIC1_COMMAND, 0x11);  // ICW1: 初始化
+    outb(PIC2_COMMAND, 0x11);
+    outb(PIC1_DATA, 0x20);      // ICW2: 主片中断从32开始
+    outb(PIC2_DATA, 0x28);      // ICW2: 从片中断从40开始
+    outb(PIC1_DATA, 0x04);      // ICW3: 主片有从片在IRQ2
+    outb(PIC2_DATA, 0x02);      // ICW3: 从片级联ID为2
+    outb(PIC1_DATA, 0x01);      // ICW4: 8086模式
+    outb(PIC2_DATA, 0x01);
+
+    // 显式设置中断屏蔽字，只允许键盘中断 (IRQ1)
+    outb(PIC1_DATA, 0xFD);  // 11111101，只允许 IRQ1（键盘），屏蔽其他
+    outb(PIC2_DATA, 0xFF);  // 11111111，屏蔽所有从片中断
+}
+
 // 定义IDT条目结构
 struct idt_entry {
     unsigned short base_low;
@@ -41,9 +71,10 @@ void init_idt() {
     }
 
     // 设置除零异常（中断号0）的处理函数
-    // 0x08 是代码段选择子（你的boot.asm中CODE_SEG = 0x08）
+    // 0x08 是代码段选择子（boot.asm中CODE_SEG = 0x08）
     // 0x8E 表示 present, ring0, 32位中断门
     idt_set_gate(0, (unsigned int)isr0, 0x08, 0x8E);
+    idt_set_gate(33, (unsigned int)isr33, 0x08, 0x8E);  // 键盘中断
 
     // 加载IDTR
     __asm__ volatile("lidt (%0)" : : "r" (&idtp));
@@ -67,9 +98,8 @@ void exception_handler() {
 }
 
 void kernel_main() {
-    // 直接写显存 - 现在是在保护模式下，32位地址直接可用
     char *video_memory = (char*)0xb8000;
-    const char *message = "Hello MVP OS! Running in Protected Mode!";
+    const char *message = "MVP OS with Keyboard Support!\nType something...\n";
     int i = 0;
     
     // 清屏
@@ -78,22 +108,35 @@ void kernel_main() {
         video_memory[j + 1] = 0x07;
     }
     
-    // 显示消息
+    // 显示欢迎信息
     while (*message) {
-        video_memory[i] = *message++;
-        video_memory[i + 1] = 0x07;  // 白色
-        i += 2;
+        if (*message == '\n') {
+            // 简单的换行处理（临时）
+            i = ((i / 160) + 1) * 160;
+            message++;
+        } else {
+            video_memory[i] = *message++;
+            video_memory[i + 1] = 0x07;
+            i += 2;
+        }
     }
     
     // 初始化IDT
     init_idt();
-
-    // 故意除零
-    int a = 10;
-    int b = 0;
-    int c = a / b;   // 触发中断0
     
-    // 无限循环
+    // 重新映射PIC
+    pic_remap();
+    
+    // 初始化键盘
+    // 注意：keyboard.c中的init_keyboard需要声明为外部函数
+    // 这里简单起见，我们直接用putchar显示
+    extern void init_keyboard();
+    init_keyboard();
+    
+    // 开启中断
+    __asm__ volatile("sti");
+    
+    // 无限循环，中断会处理键盘
     while(1) {
         __asm__ volatile("hlt");
     }
