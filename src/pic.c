@@ -1,6 +1,7 @@
-// src/pic.c
+// pic.c
 #include "pic.h"
 #include "io.h"
+#include "kernel.h"
 
 #define PIC1_COMMAND 0x20
 #define PIC1_DATA    0x21

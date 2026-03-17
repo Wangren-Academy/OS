@@ -1,4 +1,4 @@
-/* src/linker.ld */
+/* linker.ld */
 OUTPUT_FORMAT("binary")
 ENTRY(_start)
 
@@ -24,7 +24,4 @@ SECTIONS
         *(COMMON)
         _bss_end = .;
     }
-    
-    /* 强制填充到 100 扇区边界（51200 字节） */
-    . = 0x10000 + 51200;
 }

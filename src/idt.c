@@ -1,6 +1,7 @@
-// src/idt.c
+// idt.c
 #include "idt.h"
 #include "kernel.h"
+#include "memory.h"
 
 // IDT条目结构
 struct idt_entry {
@@ -33,7 +34,7 @@ static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t 
     idt[num].flags     = flags;
 }
 
-void init_idt() {
+void idt_init() {
     idtp.limit = sizeof(struct idt_entry) * 256 - 1;
     idtp.base  = (uint32_t)&idt;
 
@@ -54,11 +55,11 @@ void init_idt() {
 // 异常处理函数（被isr0调用）
 void exception_handler() {
     const char *msg = "Divide by zero!";
-    char *video = (char*)0xb8000;
+    char *video = VIDEO_MEMORY;
     int i = 0;
     while (*msg) {
         video[i] = *msg++;
-        video[i+1] = 0x04; // 红色
+        video[i+1] = ERROR_ATTRIBUTE;
         i += 2;
     }
     while (1) __asm__("hlt");

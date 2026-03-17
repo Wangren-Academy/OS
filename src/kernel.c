@@ -1,4 +1,4 @@
-// src/kernel.c
+// kernel.c
 #include "kernel.h"
 #include "idt.h"
 #include "pic.h"
@@ -6,25 +6,24 @@
 #include "screen.h"
 
 void kernel_main() {
-    // 清屏并显示欢迎信息
     clear_screen();
-    print("MVP OS with Keyboard Support!\n");
-    print("Type something...\n");
+    print("MVP OS (Structured Version)\n");
+    print("Type something (Enter for new line):\n> ");
 
-    // 初始化IDT
-    init_idt();
-
-    // 重新映射PIC
+    idt_init();
     pic_remap();
+    keyboard_init();
 
-    // 初始化键盘
-    init_keyboard();
+    __asm__("sti");
 
-    // 开启中断
-    __asm__ volatile("sti");
-
-    // 无限循环，中断处理键盘输入
     while (1) {
-        __asm__ volatile("hlt");
+        char c = keyboard_getchar();
+        if (c) {
+            putchar(c);           // 回显
+            if (c == '\n') {
+                print("> ");      // 提示符
+            }
+        }
+        __asm__("hlt");
     }
 }

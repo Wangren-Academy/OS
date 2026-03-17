@@ -1,4 +1,4 @@
-// src/io.h
+// io.h - 端口输入输出
 #ifndef IO_H
 #define IO_H
 
