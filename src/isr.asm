@@ -1,9 +1,13 @@
-; isr.asm
+; isr.asm - 中断服务例程（保护模式）
 [bits 32]
 
 global isr0
-extern exception_handler
+global isr33
 
+extern exception_handler
+extern keyboard_handler
+
+; 除零异常 (中断 0)
 isr0:
     cli
     pusha
@@ -11,7 +15,7 @@ isr0:
     push es
     push fs
     push gs
-    mov ax, 0x10            ; 数据段选择子
+    mov ax, 0x10            ; 内核数据段选择子
     mov ds, ax
     mov es, ax
     mov fs, ax
@@ -25,8 +29,7 @@ isr0:
     sti
     iret
 
-global isr33
-extern keyboard_handler
+; 键盘中断 (IRQ1 → 中断 33)
 isr33:
     cli
     pusha

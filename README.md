@@ -15,7 +15,8 @@ gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -I src -c src/pic.c -o bui
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -I src -c src/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -I src -c src/screen.c -o build/screen.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -I src -c src/fs.c -o build/fs.o
-ld -m elf_i386 -T src/linker.ld build/kernel_entry.o build/isr.o build/kernel.o build/idt.o build/pic.o build/keyboard.o build/screen.o build/fs.o -o build/kernel.bin
+gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -I src -c src/string.c -o build/string.o
+ld -m elf_i386 -T src/linker.ld build/kernel_entry.o build/isr.o build/kernel.o build/idt.o build/pic.o build/keyboard.o build/screen.o build/fs.o build/string.o -o build/kernel.bin
 dd if=/dev/zero of=build/os.img bs=512 count=2880 2>/dev/null
 dd if=build/boot.bin of=build/os.img bs=512 count=1 conv=notrunc 2>/dev/null
 dd if=build/kernel.bin of=build/os.img bs=512 seek=1 conv=notrunc 2>/dev/null

@@ -1,4 +1,4 @@
-// io.h - 端口输入输出
+// io.h - 端口 I/O 内联函数
 #ifndef IO_H
 #define IO_H
 

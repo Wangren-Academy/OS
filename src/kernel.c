@@ -1,28 +1,18 @@
-// kernel.c
+// kernel.c - 内核主程序
 #include "kernel.h"
 #include "idt.h"
 #include "pic.h"
 #include "keyboard.h"
 #include "screen.h"
 #include "fs.h"
+#include "string.h"
 
 #define CMD_BUFFER_SIZE 128
 static char cmd_buffer[CMD_BUFFER_SIZE];
-static int cmd_pos = 0;
+static int  cmd_pos = 0;
 
-// 简单字符串比较（全局，供命令解析使用）
-int strcmp(const char *a, const char *b) {
-    while (*a && *b && *a == *b) { a++; b++; }
-    return *a - *b;
-}
-
-int strncmp(const char *a, const char *b, int n) {
-    while (n-- && *a && *b && *a == *b) { a++; b++; }
-    if (n < 0) return 0;
-    return *a - *b;
-}
-
-void handle_command(const char *cmd) {
+// 命令处理函数
+static void handle_command(const char *cmd) {
     if (cmd[0] == '\0') return;
 
     if (strcmp(cmd, "ls") == 0) {
@@ -43,18 +33,18 @@ void handle_command(const char *cmd) {
     }
 }
 
-void kernel_main() {
+void kernel_main(void) {
     clear_screen();
     print("MVP OS with File System (Static FS)\n");
 
-    idt_init();
-    pic_remap();
-    keyboard_init();
-    fs_init();
+    idt_init();          // 初始化中断描述符表
+    pic_remap();         // 重映射 PIC
+    keyboard_init();     // 初始化键盘
+    fs_init();           // 初始化文件系统
 
     print("> ");
 
-    __asm__("sti");
+    __asm__("sti");      // 开中断
 
     while (1) {
         char c = keyboard_getchar();
@@ -75,6 +65,6 @@ void kernel_main() {
                 putchar(c);  // 回显
             }
         }
-        __asm__("hlt");
+        __asm__("hlt");   // 节省 CPU 功耗
     }
 }

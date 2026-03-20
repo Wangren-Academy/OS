@@ -1,4 +1,4 @@
-// kernel.h - 通用类型定义
+// kernel.h - 内核通用类型定义
 #ifndef KERNEL_H
 #define KERNEL_H
 

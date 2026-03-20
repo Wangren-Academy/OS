@@ -1,4 +1,4 @@
-; kernel_entry.asm
+; kernel_entry.asm - 内核入口点（保护模式）
 [bits 32]
 [extern kernel_main]
 [global _start]
@@ -17,4 +17,6 @@ _start:
 
     ; 调用内核主函数
     call kernel_main
+
+    ; 内核不应返回，若返回则死循环
     jmp $
